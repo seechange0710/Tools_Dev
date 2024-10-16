@@ -35,8 +35,8 @@ This script aims to communicate with a online RNAseq database and automate the q
 ### 5) Examples:
 
 <img width="1106" alt="start_info" src="https://github.com/user-attachments/assets/06db6733-f503-4865-ad6b-437de5572e72">
-above is how start info table looks like when the script runs appropriately, gene IDs that are recognized by the script will be also display on the bottom.<br/>
+above is how start info table looks like when the script runs appropriately, gene IDs that are recognized by the script will be also display on the bottom.<br/><br/>
 
 
-<img width="891" alt="formatted_results" src="https://github.com/user-attachments/assets/65db8c92-4a34-4a16-8807-91f0b616b69f">
+<img width="891" alt="formatted_results" src="https://github.com/user-attachments/assets/65db8c92-4a34-4a16-8807-91f0b616b69f"><br/>
 formatted results consist of in total eight columns, including average gene expression in FPKM and log2foldchange between mock and treatment.
