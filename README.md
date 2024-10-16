@@ -1,5 +1,5 @@
 # Development of tools for scientific use
-Hi there, the main aim of this repository is to deposit scripts that are developed for easing data query and analysis processes in scientific research, hopefully it can help ones who need helps. I am also looking forward to new opportunities/challenges in scientific software development as well as AI/ML-powered application development, you are always welcome to contact me via email **sicheng.xu.work@gamil.com** if you are looking for someone who may solve problems in your research through programming or have a good idea and want to build a team to achieve it :).
+Hi there, the main aim of this repository is to deposit scripts that are developed for easing data query and analysis processes in scientific research, hopefully it can help ones who need helps. I am also looking forward to new opportunities/challenges in scientific software development as well as AI/ML-powered application development, you are always welcome to contact me via email **sicheng.xu.work@gmail.com** if you are looking for someone who may solve problems in your research through programming or have a good idea and want to build a team to achieve it :).
 
 ## Project 1: fetch needed information from online RNAseq database
 ### 1) File name: 
