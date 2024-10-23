@@ -5,12 +5,15 @@ import logging
 from urllib.parse import urljoin
 import pandas as pd
 import argparse
+#---- info ----#
+
+# version 1.1 - update on function: add new function extract expression data of specific treatment through specifying '--pattern' tag
 
 #---- functions ----#
 
 class RNAseqInfo_query:
     
-    def __init__(self, base_url='https://plantrnadb.com/athrdb/',gene_list='', list_format='csv', list_sep=',', tag='tbox', dest='/Volumes/Expansion/RNA_seq_data', pattern='flg22'):
+    def __init__(self, base_url='https://plantrnadb.com/athrdb/',gene_list='', list_format='csv', list_sep=',', tag='tbox', pattern = '', dest='/Volumes/Expansion/RNA_seq_data'):
         self.base_url = base_url
         self.gene_list = gene_list
         self.list_format = list_format
@@ -184,6 +187,129 @@ class RNAseqInfo_query:
             print(f'Error: fecth data from server failed: {e}')
             self.content = None
 
+    def extract_conditioned_info(self, gene):
+        """
+        only extract the expression data of given condition/treatment, e.g. flg22, for each gene
+        """
+        pattern_list = []
+        if self.pattern == '':
+            self.write_results(gene)
+        else:
+            pattern_list.append(self.pattern)
+            file_name = f'{self.dest}/{self.pattern}_RNAseq_data.csv'
+            if '_' in self.pattern:
+                pattern_list = self.pattern.split('_')
+            if self.content == None:
+                raise ValueError(f'No data has been retrieved for gene {gene}')
+            ##try:
+            up_extract = []
+            down_extract = []
+            up_extract_dict = {}
+            down_extract_dict = {}
+            
+            df = {}
+            col_dtype = {}
+            rep_dict = {'\nup':',up',
+                        '\ndown':',down',
+                        '\n':''}
+            for k,v in rep_dict.items():
+                self.content = self.content.replace(k,v)
+            items = self.content.split(',')
+            up_treatment = items[8]
+            down_treatment = items[15]
+            up_treat_items = up_treatment.split(';')
+            down_treat_items = down_treatment.split(';')
+            if len(pattern_list) == 1:
+                up_extract = [self.pattern in item for item in up_treat_items]
+                down_extract = [self.pattern in item for item in down_treat_items]
+
+                # function start
+                for i,title in enumerate(self.schema):
+                    column = title
+                    index_row_up = i+len(self.schema)
+                    index_row_down = i + (2*len(self.schema))
+                    item_up = items[index_row_up]
+                    item_down = items[index_row_down]
+                    up_extract_items = None
+                    down_extract_items = None
+                    if i in [1,5]:
+                        elements_up = item_up.split(';')
+                        elements_down = item_down.split(';')
+                        if len(elements_up) != len(up_extract):
+                            raise ValueError(f'Step{i}:length of up-regulated treatment is NOT equal to that of {title} while processing gene {gene}')
+                        if len(elements_down) != len(down_extract):
+                            raise ValueError(f'Step{i}:length of down-regulated treatment is NOT equal to that of {title} while processing gene {gene}:\n{len(elements_down)}\n{len(down_extract)}')
+                        len_elements_up = len(elements_up)
+                        len_elements_down = len(elements_down)
+                        try:
+                            up_extract_items = [item for item, flag in zip(elements_up,up_extract) if flag]
+                            down_extract_items = [item for item, flag in zip(elements_down,down_extract) if flag]
+                            if i == 1:
+                                extract_items_len = len(up_extract_items) + len(down_extract_items)
+                                gene_col = [gene] * extract_items_len
+                                df['gene'] = gene_col
+                            extract_items = up_extract_items + down_extract_items
+                            df[column] = extract_items
+                            col_dtype[column] = pd.StringDtype() if i == 1 else pd.Float32Dtype()
+                        except Exception as e:
+                            print(f'in step{i}:{e}')
+                    elif i in [2,4,6]:
+                        item_up = item_up.replace('_',';')
+                        item_down = item_down.replace('_',';')
+                        elements_up = item_up.split(';')
+                        elements_down = item_down.split(';')
+                        for n, condition in enumerate(self.condition):
+                            column = f'{title}_{condition}'
+                            elements_up_col = elements_up[n * len_elements_up:(n + 1) * len_elements_up]
+                            elements_down_col = elements_down[n * len_elements_down:(n + 1) * len_elements_down]
+                            if len(elements_up_col) != len(up_extract):
+                                raise ValueError(f'Step{i}:length of up-regulated treatment in {condition} is NOT equal to that of {title} while processing gene {gene}:\n{len(elements_up_col)}\n{len(up_extract)}')
+                            if len(elements_down_col) != len(down_extract):
+                                raise ValueError(f'Step{i}:length of down-regulated treatment in {condition} is NOT equal to that of {title} while processing gene {gene}:\n{len(elements_down_col)}\n{len(down_extract)}')
+                            try:
+                                up_extract_items = [item for item, flag in zip(elements_up_col,up_extract) if flag]
+                                down_extract_items = [item for item, flag in zip(elements_down_col,down_extract) if flag]
+                                both_updown_items = up_extract_items + down_extract_items
+                                df[column] = both_updown_items
+                                col_dtype[column] = pd.StringDtype() if i == 6 else pd.Float32Dtype()
+                            except Exception as e:
+                                print(f'in step{i}:{e}')
+                    else:
+                        pass
+                # function end
+            else:
+                print('multiple patterns mode is still under construction')
+                #for treatment in pattern_list:
+                #    if up_extract == [] and down_extract == []:
+                #        pass
+                #    else:
+                #        up_extract = []
+                #        down_extract = []
+                #    up_extract = [treatment in item for item in up_treat_items]
+                #    up_extract_dict[treatment] = up_extract
+                #    down_extract = [treatment in item for item in down_treat_items]
+                #    down_extract_dict[treatment] = down_extract
+                #    up_extract = []
+                #    down_extract = []
+                #    for key, value in up_extract_dict.items():
+                #        up_extract = value
+                #        down_extract = down_extract_dict[key]
+                        #function start
+
+                        # function end
+            
+            try:
+                pd_df = pd.DataFrame(df)
+                df_copy = pd_df.astype(dtype=col_dtype, copy=True)
+                csv_pd_df = df_copy.to_csv(index=False)
+                if os.path.exists(file_name):
+                    csv_pd_df = df_copy.to_csv(index=False, header=False)
+                with open(file_name, 'a') as w_file:
+                    w_file.write(csv_pd_df)
+            except Exception as e:
+                print(f'before last step:{e}')
+            ##except Exception as e:
+                ##print(f'last step:{e}')
 
     def write_results(self, gene):
         """
@@ -250,7 +376,7 @@ class RNAseqInfo_query:
         for gene in self.genes:
             self.pre_search(gene)
             self.get_content(gene)
-            self.write_results(gene)
+            self.extract_conditioned_info(gene)
 
 
 
@@ -269,6 +395,8 @@ if __name__ == '__main__':
                         help='Delimiter used in the gene list, either ",", ";" or "\t" (default: ",")')
     parser.add_argument('--tag', type=str, default='tbox',
                         help='The type of desired information, e.g. "tbox" stands for treatment. (default: tbox)')
+    parser.add_argument('--pattern', type=str, default='',
+                        help='The motif for which will be searched in treatment column to extract expression data of specific conditions, e.g. flg22')
     parser.add_argument('--dest', type=str, default=os.path.dirname(__file__),
                         help='The folder full path for formatted results (default: current script directory)')
     args = parser.parse_args()
@@ -282,6 +410,7 @@ if __name__ == '__main__':
                                 list_format=args.list_format,
                                 list_sep=args.list_sep,
                                 tag=args.tag,
+                                pattern=args.pattern,
                                 dest=args.dest)
     instance.formatter_print_start_info()
     instance.log_start_info()
@@ -293,3 +422,14 @@ if __name__ == '__main__':
         print(f'Error: {ve}')
     except Exception as e:
         print(f'extract RNAseq expression failed: {e}')
+
+"""
+Overview of data structure from plantrnadb (after split by delimter ',': R=row, C=cell, "|"=column sepatator, "-"=row separator)
+====================================================================================================================================================
+|#R1#|--C1:group--|-------C2:tagname--------|------C3:FPKM------|------C4:infotag------|-----C5:se-----|--------C6:fc---------|-----C7:contlib-----|
+----------------------------------------------------------------------------------------------------------------------------------------------------
+|#R2#|----C8:up---｜--C9:treatment_project--｜--C10:mFPKM_tFPKM--|--C11:mock_treatment--|--C12:mSE_tSE--|--C13:log2foldchange--|--C14:singleValue--|
+----------------------------------------------------------------------------------------------------------------------------------------------------
+|#R3#|--C15:down--|--C16:treatment_project--｜--C17:mFPKM_tFPKM--|--C18:mock_treatment--|--C19:mSE_tSE--|--C20:log2foldchange--|--C21:singleValue--|
+====================================================================================================================================================
+"""
