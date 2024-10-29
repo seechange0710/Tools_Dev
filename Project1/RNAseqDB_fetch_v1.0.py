@@ -322,9 +322,7 @@ class RNAseqInfo_query:
                 else:
                     pass
                 # function end
-        else:
-            #print('multiple patterns mode is still under construction')
-                
+        else:   
             gene_sum = []
             keyword_sum = []
             for no, pattern in enumerate(pattern_list):
@@ -365,12 +363,6 @@ class RNAseqInfo_query:
                             else:
                                 df[column] = extract_items
                                 col_dtype[column] = pd.StringDtype() if i == 1 else pd.Float32Dtype()
-                            #if i == 1:
-                            #    treatment_sum = treatment_sum + extract_items
-                            #elif i == 5:
-                            #    log2foldc_sum = log2foldc_sum + extract_items
-                            #else:
-                            #    pass
                         except Exception as e:
                             print(f'Error occurs while concatenating extracted data of {title} for gene {gene}:{e}')
                     elif i in [2,4,6]: # 'fpkm', 'se', 'contlib' columns have two values, each for mock and treated groups with underscore sperated
@@ -390,18 +382,6 @@ class RNAseqInfo_query:
                                 up_extract_items = [item for item, flag in zip(elements_up_col,up_extract) if flag]
                                 down_extract_items = [item for item, flag in zip(elements_down_col,down_extract) if flag]
                                 both_updown_items = up_extract_items + down_extract_items
-                                #if i == 2 and condition == 'mock':
-                                #    fpkm_mock_sum = fpkm_mock_sum + both_updown_items
-                                #elif i == 2 and condition == 'treated':
-                                #    fpkm_treat_sum = fpkm_treat_sum + both_updown_items
-                                #elif i == 4 and condition == 'mock':
-                                #    se_mock_sum = se_mock_sum + both_updown_items
-                                #elif i == 4 and condition == 'treated':
-                                #    se_treat_sum = se_treat_sum + both_updown_items
-                                #elif i == 6  and condition == 'mock':
-                                #    cont_mock_sum = cont_mock_sum + both_updown_items
-                                #elif i == 6 and condition == 'treated':
-                                #    cont_treat_sum = cont_treat_sum + both_updown_items
                                 if column in df.keys():
                                     for item in both_updown_items:
                                         df[column].append(item)
@@ -418,8 +398,6 @@ class RNAseqInfo_query:
 
             df['keyword'] = keyword_sum
             df['gene'] = gene_sum
-        for k,v in df.items():
-            print(f'column {k} has {len(v)} values:\n{v}\n')
         try:
             pd_df = pd.DataFrame(df)
             df_copy = pd_df.astype(dtype=col_dtype, copy=True)
