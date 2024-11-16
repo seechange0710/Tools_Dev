@@ -410,6 +410,7 @@ def SummaryPrinter(suc_genes:list, fail_genes:dict):
     for k, v in fail_genes.items():
         print(f'{k} | {v}')
 
+
 def main():
     suc_genes = []
     fail_genes = {}
