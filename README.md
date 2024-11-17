@@ -29,6 +29,7 @@ This script aims to communicate with a online RNAseq database and automate the q
 --data-pattern: patterns to specify treatment(s) you want to extract expression data from, a list of treatments can be given by connecting with underscore, e.g. flg22_code_chitin
 --out-dir: full path of directory under which you want to store the formatted results
 ```
+**@@Please note: if you are searching for a pattern which starts with a '-' symbol, instead of typing in the shell ``` ... --data-pattern -x ``` you should directly use an '=' to connect ``` ... --data-pattern='-x' ``` otherwise it could be misinterpreted by the shell and wont work at least in my case using zsh in MacOS**
 
 ### 5) Examples:
 **update for version 1.1.1**
